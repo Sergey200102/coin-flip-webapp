@@ -1,0 +1,17 @@
+{
+    "manifest_version": "2",
+    "name": "Орел или Решка",
+    "description": "Игра на TON: брось монетку и выиграй!",
+    "url": "https://sergey200102.github.io/coin-flip-webapp/",
+    "icons": [
+      {
+        "src": "https://sergey200102.github.io/coin-flip-webapp/icon.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ],
+    "bridge_url": "https://bridge.tonapi.io/bridge",
+    "terms_of_use_url": "https://sergey200102.github.io/coin-flip-webapp/terms.html",
+    "privacy_policy_url": "https://sergey200102.github.io/coin-flip-webapp/privacy.html"
+  }
+  
