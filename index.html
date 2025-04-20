@@ -3,199 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Орёл или Решка</title>
+    <title>Орел или Решка | TON</title>
+    <script src="https://unpkg.com/@tonconnect/sdk@latest"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #121212, #1f1f1f);
-            color: #fff;
+            background: #0e0e0e;
+            color: #f5f5f5;
             text-align: center;
+            margin: 0;
             padding: 20px;
         }
         h1 {
-            margin-bottom: 20px;
-        }
-        .tabs {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .tab {
-            padding: 10px 20px;
-            margin: 0 5px;
-            background: #333;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .tab.active {
-            background: #007bff;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
+            margin-bottom: 10px;
         }
         .coin {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background: #f1f1f1;
+            background: #1a1a1a;
             margin: 20px auto;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            color: #000;
-            transition: transform 0.6s ease-in-out;
+            font-size: 32px;
+            box-shadow: 0 0 15px #00ffcc;
+            transition: transform 0.5s;
         }
-        .flip {
+        .coin.spin {
             animation: flip 2s ease-in-out;
         }
         @keyframes flip {
             0% { transform: rotateY(0); }
-            50% { transform: rotateY(180deg); }
-            100% { transform: rotateY(0); }
+            100% { transform: rotateY(720deg); }
         }
         input[type="number"] {
-            width: 80%;
+            width: 90%;
             padding: 10px;
             margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .button-group button {
-            padding: 10px 20px;
-            margin: 5px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: #00cc99;
             color: white;
+            font-size: 16px;
+            margin: 8px;
+            cursor: pointer;
         }
-        .button-group button.selected {
-            background-color: #0056b3;
+        button.active {
+            background-color: #007f66;
         }
-        .button-group button:disabled {
-            background-color: #444;
-            cursor: not-allowed;
+        .tab-btn {
+            padding: 10px;
+            border: none;
+            background: #222;
+            color: #fff;
+            margin: 5px;
+            cursor: pointer;
         }
-        .balance {
-            margin: 10px 0;
-            font-size: 18px;
+        .tab-btn.active {
+            background: #00cc99;
+        }
+        #walletAddress {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
-    <h1>Орёл или Решка</h1>
+    <h1>Орел или Решка</h1>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('demo')">Демо игра</div>
-        <div class="tab" onclick="switchTab('real')">Игра на TON</div>
+    <div>
+        <button class="tab-btn active" onclick="switchTab('demo')">Демо</button>
+        <button class="tab-btn" onclick="switchTab('real')">На TON</button>
     </div>
 
-    <div id="demo" class="tab-content active">
-        <div class="balance" id="demoBalance">Баланс: 100 тугриков</div>
-        <input type="number" id="demoBet" placeholder="Ставка в тугриках">
-        <div class="coin" id="demoCoin"><span id="demoCoinText">?</span></div>
-        <div class="button-group">
-            <button class="choice-button" onclick="selectDemo('Орёл 🪙', this)">Орёл 🪙</button>
-            <button class="choice-button" onclick="selectDemo('Решка 🪙', this)">Решка 🪙</button>
+    <div id="demoTab">
+        <div id="balance">Баланс: 100 ₸</div>
+        <input type="number" id="betAmount" placeholder="Ставка">
+
+        <div class="coin" id="coin">
+            <span id="coinText">?</span>
         </div>
-        <div style="margin-top: 10px;">
-            <button class="button-group" id="demoPlay" onclick="playDemo()" disabled>Запустить игру</button>
+
+        <div>
+            <button id="headsBtn">Орёл</button>
+            <button id="tailsBtn">Решка</button>
+        </div>
+        <div>
+            <button id="playBtn" disabled>Запустить игру</button>
         </div>
     </div>
 
-    <div id="real" class="tab-content">
-        <p>🔧 Эта функция пока в разработке. Ожидайте обновлений!</p>
+    <div id="realTab" style="display:none;">
+        <button id="connectWalletBtn">Подключить кошелёк</button>
+        <div id="walletAddress"></div>
+        <p style="margin-top: 20px;">Игра на TON в разработке 🚧</p>
     </div>
 
     <script>
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+        // Демо логика
+        const coin = document.getElementById("coin");
+        const coinText = document.getElementById("coinText");
+        const playBtn = document.getElementById("playBtn");
+        const headsBtn = document.getElementById("headsBtn");
+        const tailsBtn = document.getElementById("tailsBtn");
+        const betAmount = document.getElementById("betAmount");
+        const balanceDisplay = document.getElementById("balance");
+
+        let selectedChoice = null;
+        let balance = parseInt(localStorage.getItem("demo_balance")) || 100;
+        balanceDisplay.innerText = `Баланс: ${balance} ₸`;
+
+        betAmount.addEventListener('input', () => {
+            playBtn.disabled = !betAmount.value || isNaN(betAmount.value) || parseFloat(betAmount.value) <= 0;
+        });
+
+        function updateChoiceButtons() {
+            headsBtn.classList.remove("active");
+            tailsBtn.classList.remove("active");
+            if (selectedChoice === "heads") headsBtn.classList.add("active");
+            if (selectedChoice === "tails") tailsBtn.classList.add("active");
         }
 
-        let demoChoice = null;
-        const demoBetInput = document.getElementById("demoBet");
-        const demoCoin = document.getElementById("demoCoin");
-        const demoCoinText = document.getElementById("demoCoinText");
-        const demoPlayBtn = document.getElementById("demoPlay");
-        const demoBalanceDisplay = document.getElementById("demoBalance");
+        headsBtn.addEventListener("click", () => {
+            selectedChoice = "heads";
+            updateChoiceButtons();
+        });
 
-        function getStoredBalance() {
-            const stored = localStorage.getItem("demo_balance");
-            return stored ? parseFloat(stored) : 100;
-        }
+        tailsBtn.addEventListener("click", () => {
+            selectedChoice = "tails";
+            updateChoiceButtons();
+        });
 
-        function setStoredBalance(amount) {
-            localStorage.setItem("demo_balance", amount.toFixed(2));
-        }
-
-        let demoBalance = getStoredBalance();
-
-        demoBetInput.addEventListener('input', checkDemoReady);
-
-        function selectDemo(choice, btn) {
-            demoChoice = choice;
-            document.querySelectorAll('.choice-button').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            checkDemoReady();
-        }
-
-        function checkDemoReady() {
-            const bet = parseFloat(demoBetInput.value);
-            demoPlayBtn.disabled = !(demoChoice && bet > 0 && bet <= demoBalance);
-        }
-
-        function updateDemoBalance() {
-            if (demoBalance <= 0) demoBalance = 100;
-            setStoredBalance(demoBalance);
-            demoBalanceDisplay.innerText = `Баланс: ${demoBalance.toFixed(2)} тугриков`;
-        }
-
-        function playDemo() {
-            const bet = parseFloat(demoBetInput.value);
-            if (bet > demoBalance) {
-                alert("Недостаточно тугриков!");
+        playBtn.addEventListener("click", () => {
+            const bet = parseInt(betAmount.value);
+            if (!selectedChoice || bet > balance) {
+                alert("Проверь ставку и выбор стороны.");
                 return;
             }
 
-            demoCoin.classList.remove("flip");
-            demoCoinText.innerText = "?";
-            void demoCoin.offsetWidth;
-            demoCoin.classList.add("flip");
+            coin.classList.add("spin");
+            coinText.innerText = "";
+            playBtn.disabled = true;
 
             setTimeout(() => {
-                const result = Math.random() < 0.5 ? "Орёл 🪙" : "Решка 🪙";
-                demoCoinText.innerText = result;
+                coin.classList.remove("spin");
+                const result = Math.random() < 0.5 ? "heads" : "tails";
+                coinText.innerText = result === "heads" ? "Орёл" : "Решка";
 
                 setTimeout(() => {
-                    if (result === demoChoice) {
-                        demoBalance += bet;
-                        alert(`🎉 Победа! +${bet} тугриков`);
+                    if (selectedChoice === result) {
+                        balance += bet;
+                        alert(`Ты выиграл ${bet} ₸!`);
                     } else {
-                        demoBalance -= bet;
-                        alert(`💸 Проигрыш! -${bet} тугриков`);
+                        balance -= bet;
+                        alert(`Ты проиграл ${bet} ₸.`);
                     }
-                    updateDemoBalance();
-                    checkDemoReady();
-                }, 600);
+                    if (balance <= 0) balance = 100;
+                    localStorage.setItem("demo_balance", balance);
+                    balanceDisplay.innerText = `Баланс: ${balance} ₸`;
+                    playBtn.disabled = false;
+                }, 500);
 
             }, 2000);
+        });
+
+        // Tabs
+        function switchTab(tab) {
+            document.getElementById("demoTab").style.display = tab === "demo" ? "block" : "none";
+            document.getElementById("realTab").style.display = tab === "real" ? "block" : "none";
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll('.tab-btn')[tab === "demo" ? 0 : 1].classList.add("active");
         }
 
-        updateDemoBalance();
+        // TON Connect
+        const tonConnect = new TON_CONNECT.TonConnect();
+        tonConnect.setup({ manifestUrl: "https://yourdomain.com/tonconnect-manifest.json" });
+
+        const connectWalletBtn = document.getElementById("connectWalletBtn");
+        const walletAddressDiv = document.getElementById("walletAddress");
+
+        connectWalletBtn.addEventListener("click", async () => {
+            try {
+                const connectedWallet = await tonConnect.connectWallet();
+                walletAddressDiv.innerText = `Адрес: ${connectedWallet.account.address}`;
+            } catch (err) {
+                alert("Не удалось подключить кошелек");
+            }
+        });
     </script>
 </body>
 </html>
+
