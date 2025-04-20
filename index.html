@@ -36,16 +36,32 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        button {
+        .choice-button {
+            padding: 10px 20px;
+            border: 2px solid #ccc;
+            background-color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        .choice-button.selected {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        button#playBtn {
             padding: 10px 20px;
             border: none;
-            background-color: #007bff;
+            background-color: #28a745;
             color: white;
             font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
+            margin-top: 10px;
         }
-        button:disabled {
+        button#playBtn:disabled {
             background-color: #ccc;
         }
     </style>
@@ -59,53 +75,58 @@
     <div class="coin" id="coin">
         <span id="coinText">?</span>
     </div>
-    <div>
-        <button id="headsBtn">Орёл 🪙</button>
-        <button id="tailsBtn">Решка 🪙</button>
+    <div id="choices">
+        <button class="choice-button" id="headsBtn" onclick="selectChoice(this, 'Орёл 🪙')">Орёл 🪙</button>
+        <button class="choice-button" id="tailsBtn" onclick="selectChoice(this, 'Решка 🪙')">Решка 🪙</button>
     </div>
     <div>
         <button id="playBtn" disabled>Запустить игру</button>
     </div>
-    
+
     <script>
         const coin = document.getElementById("coin");
         const playBtn = document.getElementById("playBtn");
-        const headsBtn = document.getElementById("headsBtn");
-        const tailsBtn = document.getElementById("tailsBtn");
         const betAmount = document.getElementById("betAmount");
 
         let selectedChoice = null;
 
-        // Проверка ставки
-        betAmount.addEventListener('input', () => {
-            if (betAmount.value && !isNaN(betAmount.value) && parseFloat(betAmount.value) > 0) {
-                playBtn.disabled = false;
-            } else {
-                playBtn.disabled = true;
-            }
-        });
+        function selectChoice(button, choice) {
+            // Сброс всех кнопок
+            document.querySelectorAll('.choice-button').forEach(btn => btn.classList.remove('selected'));
+            // Выделение текущей
+            button.classList.add('selected');
+            selectedChoice = choice;
+            checkReady();
+        }
 
-        // Выбор Орёл или Решка
-        headsBtn.addEventListener("click", () => { selectedChoice = "Орёл 🪙"; });
-        tailsBtn.addEventListener("click", () => { selectedChoice = "Решка 🪙"; });
+        // Проверка, можно ли включить кнопку запуска
+        function checkReady() {
+            const validBet = betAmount.value && !isNaN(betAmount.value) && parseFloat(betAmount.value) > 0;
+            playBtn.disabled = !(validBet && selectedChoice);
+        }
 
-        // Запуск игры
+        betAmount.addEventListener('input', checkReady);
+
         playBtn.addEventListener("click", () => {
             if (!selectedChoice) {
                 alert("Выберите Орёл или Решка!");
                 return;
             }
+
             coin.classList.add("spin");
+            document.getElementById("coinText").innerText = "?";
+
             setTimeout(() => {
                 coin.classList.remove("spin");
                 const result = Math.random() < 0.5 ? "Орёл 🪙" : "Решка 🪙";
                 document.getElementById("coinText").innerText = result;
+
                 if (selectedChoice === result) {
-                    alert(`Поздравляем! Ты выиграл ${betAmount.value} TON!`);
+                    alert(`🎉 Поздравляем! Ты выиграл ${betAmount.value} TON!`);
                 } else {
-                    alert("Ты проиграл. Попробуй снова!");
+                    alert("💸 Ты проиграл. Попробуй снова!");
                 }
-            }, 2000); // 2 секунды для кручения монетки
+            }, 2000);
         });
     </script>
 </body>
